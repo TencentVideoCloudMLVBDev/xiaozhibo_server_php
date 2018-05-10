@@ -1,0 +1,44 @@
+server {
+        #        listen 443 ssl ; #E0000 ssl backlog=2048 so_keepalive=300:300:3;
+                listen 80;
+
+                server_name             XXX.liteavdemo.myqcloud.com;
+
+        root /data/liteav_demo/;
+        error_log logs/livedemo.tencentyun.com-error_log;
+        access_log logs/livedemo.tencentyun.com-access_log;
+
+        location / {
+            if (!-e $request_filename) {
+                rewrite ^/(.*)$ /interface.php/$1 last;
+                        break;
+            }
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        location ~ \.php {
+                fastcgi_pass   127.0.0.1:9000;
+                fastcgi_index  index.php;
+                #include       fastcgi_params;
+                include        fastcgi.conf;
+
+                set $real_script_name $fastcgi_script_name;
+                if ($fastcgi_script_name ~ "^(.+?\.php)(/.+)$") {
+                        set $real_script_name $1;
+                        set $path_info $2;
+                }
+                fastcgi_param  SCRIPT_FILENAME  $document_root$real_script_name;
+                fastcgi_param  SCRIPT_NAME $real_script_name;
+                fastcgi_param  PATH_INFO $path_info;
+
+                fastcgi_param SERVER_NAME $http_host;
+                fastcgi_ignore_client_abort on;
+                fastcgi_connect_timeout 600s;
+                fastcgi_send_timeout 600s;
+                fastcgi_read_timeout 600s;
+        }
+}
