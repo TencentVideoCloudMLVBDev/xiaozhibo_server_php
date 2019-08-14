@@ -22,7 +22,7 @@ function genErrMsg($errCode, $errorMsg = "")
 {
 	$errMsg = array(
 		EC_OK=>"OK",
-        EC_BAD_REQUEST => "Bad Request
+        EC_BAD_REQUEST => "Bad Request",
         EC_SIGN_ERROR => "Invalid Token",
         EC_DATABASE_ERROR => "Internal Server Error(db error)",
         EC_UPDATE_ERROR => "update error",
