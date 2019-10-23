@@ -178,7 +178,7 @@ define('IM_SECRETKEY', 'xxxxxxxx'); // 即时通信 密钥
 
 ## 后台源码目录结构说明
 ```
-live_demo_service
+xiaozhibo_server_php
 ├── callback
 │   └── tape_callback.php        //录制回调的处理
 ├── common
