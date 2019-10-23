@@ -13,11 +13,11 @@ class upload_user_info extends AbstractInterface
     public function verifyInput(&$args)
     {
         $rules = array(
-            'userid' => array('type' => 'string', 'reg' => '^[a-zA-Z][a-zA-Z0-9_]{3,23}$'),
-            'nickname' => array('type' => 'string'),
-            'avatar' => array('type' => 'string'),
-            'sex' => array('type' => 'int'),
-            'frontcover' => array( 'type' => 'string', 'nullable' => true, "emptyable"=>true)
+            'userid'     => array('type' => 'string', 'reg' => '^[a-zA-Z][a-zA-Z0-9_]{3,23}$'),
+            'nickname'   => array('type' => 'string', 'nullable' => true, "emptyable" => true),
+            'avatar'     => array('type' => 'string', 'nullable' => true, "emptyable" => true),
+            'sex'        => array('type' => 'int'),
+            'frontcover' => array('type' => 'string', "nullable" => true, "emptyable" => true),
         );
 
         return $this->_verifyInput($args, $rules);
@@ -30,9 +30,9 @@ class upload_user_info extends AbstractInterface
 
     public function process()
     {
-        interface_log(INFO, EC_OK,"upload_user_info args=" . var_export($this->_args, true));
+        interface_log(INFO, EC_OK, "upload_user_info args=" . var_export($this->_args, true));
 
-        $config = getConf('ROUTE.DB');
+        $config   = getConf('ROUTE.DB');
         $dao_live = new dao_live($config['HOST'], $config['PORT'], $config['USER'], $config['PASSWD'], $config['DBNAME']);
         $dao_live->EscapeJson($this->_args);
 
@@ -41,8 +41,7 @@ class upload_user_info extends AbstractInterface
             $this->_args['avatar'],
             $this->_args['sex'],
             $this->_args['frontcover']);
-        if($ret == 0)
-        {
+        if ($ret == 0) {
             $dao_live->addRoom($this->_args['userid'],
                 $this->_args['title'],
                 $this->_args['frontcover'],

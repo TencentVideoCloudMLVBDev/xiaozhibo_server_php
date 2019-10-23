@@ -60,7 +60,6 @@
 		"expires": 300,  // 过期时间（秒）
 		"roomservice_sign": {       //登录roomservice的签名
 			"sdkAppID": 123456,     // 云通信 sdkappid
-			"accountType": "xxxx",  // 云通信 账号集成类型
 			"userID": "xxxx",       // 用户id
 			"userSig": "xxxxxxxx",  // 云通信用户签名
 		},
@@ -107,44 +106,10 @@ token, 和refresh_token 会被更新
 	}
 }
 ```
-##获取游客信息(仅供H5分享页面使用)
+
+>**除注册，登录，续期接口外，其它每个接口都需要在http header增加一个自定义类型"Liteav-Sig"，用于签名。http body需要增加userid、timestamp、expires这三个公共参数。一个完整的htt请求实体如下：**
+
 ```
-路径：		/get_visitor_info
-```
-- 参数:
-
-```json
-{
-	"userid": "xxx", //分享者userid
-	"roomid": "xxx", //直播房间号
-	"txTime": 1515134506,   //登陆时返回的roomservice的请求失效时间（时间戳单位秒）
-	"sign": "xxx" //登陆时返回的roomservice的请求的签名，计算方法sign = md5（apiKey + txTime + userID）
-}
-```
-
-- 返回:
-
-```json
-{
-	"code": 200,
-	"message": "OK",
-	"data": {
-		"userid":"xxxx", //后台创建的匿名userid
-		"sdkAppID":"xxxx",
-		"accType":"xxx",
-		"userSig":"xxx",
-		
-		"apiKey":"xxx",
-		"roomID":"xxx",
-		“txTime":xxxxxx,
-		"sign":"xxx" //计算方法sign = md5（apiKey + userID + roomID + txTime）
-	}
-}
-```
-
->**除注册，登录，续期，获取游客信息接口外，其它每个接口都需要在http header增加一个自定义类型"Liteav-Sig"，用于签名。http body需要增加userid、timestamp、expires这三个公共参数。一个完整的htt请求实体如下：**
-
->```
 请求实体(json)：
 {
 	"userid":"xxxx",
@@ -243,159 +208,24 @@ token, 和refresh_token 会被更新
 }
 ```
 
-## 上传房间信息
+## 获取COS上传签名
 ```
-路径： /upload_room
+路径： /get_cos_sign
 ```
-- 参数
+- 参数：  
 
 ```json
-{
-	"title":"XXX",
-    "location":"xxx",       //地理位置
-}
+空
 ```
 - 返回：
 
 ```json
 {
-	"code": 200,  //602,参数错误; 500,数据库操作失败
-	"message": "OK"
-}
-```
-
-## 发布小视频
-
-```
-路径：		/upload_ugc
-```
-
-- 参数：
-
-```json
-{
-	"file_id":"xxx",        //点播文件id
-	"title":"xxxx",         //标题
-	"frontcover":"xxx",     //封面图url
-	"location":"xxx",       //地理位置
-	"play_url":"xxx",       //播放地址
-}
-```
-
-- 返回:
-
-```json
-{
-	"code": 200, //602,参数错误; 601,更新失败; 500,数据库操作失败
-	"message": "OK"
-}
-```
-
-## 获取小视频列表
-
-```
-路径：		/get_ugc_list
-```
-
-- 参数：
-
-```json
-{
-	"index":0,
-	"count":20
-}
-```
-
-- 返回:
-
-```json
-{
-	"code": 200,  //602,参数错误
-	"message": "OK",
-	"data": {
-		"list": [
-			{
-				"userid":"xxx",			 //用户id
-				"nickname":"xxx",		 //昵称
-				"avatar":"xxx",			 //头像url
-				“file_id":"xxx",        //点播文件id
-				"title":"xxxx“,         //标题
-				"frontcover":"xxx",     //封面图url
-				"location":"xxx",       //地理位置
-				"play_url":"xxx",       //播放地址
-				"create_time":"xxxx-xx-xx xx:xx:xx",  //创建时间
-			}
-		]
-	}
-}
-```
-##获取roomservice服务签名
-```
-路径：		/get_roomservice_sign
-```
-- 参数:
-
-```json
-{
-	"userid":"xxx"
-}
-```
-
-- 返回:
-
-```json
-{
-	"code": 200, //602,参数错误
-	"message": "OK",
-	"data": {
-		"txTime":15114235, //请求失效时间（时间戳单位秒）
-		"sign":"xxxx"     //请求的签名，计算方法sign = md5（apiKey + txTime + userID）
-	}
-}
-```
-
-
-##获取点播签名
-```
-路径：		/get_vod_sign
-```
-- 参数:
-
-```
-空
-```
-
-- 返回:
-
-```json
-{
 	"code": 200,
 	"message": "OK",
 	"data": {
-		"signature":"xxx", //请求的点播签名
-	}
-}
-```
-
-##获取COS签名
-```
-路径：		/get_cos_sign
-```
-- 参数:
-
-```
-空
-```
-
-- 返回:
-
-```json
-{
-	"code": 200,
-	"message": "OK",
-	"data": {
-		"signKey":"xxxx",     //按照cos的签名规则计算出来的签名key
-		"keyTime":"xxxx"      //按照cos的签名规则，需要的签名有效期，格式为 签名有效期起始时间戳(单位s):签名有效期过期时间戳(单位s)
+		"signKey":"xxx",
+		"keyTime":"http://xxxx",
 	}
 }
 ```
@@ -406,86 +236,43 @@ token, 和refresh_token 会被更新
 ## 用户信息
 
 ```mysql
-CREATE TABLE IF NOT EXISTS tb_account(
-  userid VARCHAR(50) NOT NULL,
-  password VARCHAR(255),
-  nickname VARCHAR(100),
-  sex INT DEFAULT -1,
-  avatar VARCHAR(254),
-  frontcover varchar(255) DEFAULT NULL,
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY(userid)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
-##回放列表
-```
-CREATE TABLE IF NOT EXISTS tb_vod (
-  userid varchar(50) NOT NULL,
-  file_id varchar(150) NOT NULL,
-  frontcover varchar(255) DEFAULT NULL,
-  location varchar(128) DEFAULT NULL,
-  play_url varchar(255) DEFAULT NULL,
-  like_count int(11) NOT NULL DEFAULT '0',
-  viewer_count int(11) NOT NULL DEFAULT '0',
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  hls_play_url varchar(255) DEFAULT NULL,
-  start_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  title varchar(128) DEFAULT NULL,
-  PRIMARY KEY (userid,file_id)
+CREATE IF NOT EXISTS TABLE `tb_account` (
+  `userid` varchar(50) NOT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `nickname` varchar(100) DEFAULT NULL,
+  `sex` int(11) DEFAULT '-1',
+  `avatar` varchar(254) DEFAULT NULL,
+  `frontcover` varchar(255) DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
-##小视频列表
-```
-CREATE TABLE IF NOT EXISTS tb_ugc (
-  userid varchar(50) NOT NULL,
-  file_id varchar(150) NOT NULL,
-  title varchar(128) DEFAULT NULL,
-  frontcover varchar(255) DEFAULT NULL,
-  location varchar(128) DEFAULT NULL,
-  play_url varchar(255) DEFAULT NULL,
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (userid,file_id)
+##回放列表
+```mysql
+CREATE IF NOT EXISTS TABLE `tb_vod` (
+  `userid` varchar(50) NOT NULL,
+  `file_id` varchar(150) NOT NULL,
+  `frontcover` varchar(255) DEFAULT NULL,
+  `location` varchar(128) DEFAULT NULL,
+  `play_url` varchar(255) DEFAULT NULL,
+  `like_count` int(11) NOT NULL DEFAULT '0',
+  `viewer_count` int(11) NOT NULL DEFAULT '0',
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `hls_play_url` varchar(255) DEFAULT NULL,
+  `start_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `title` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`userid`,`file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 ##房间信息列表
 ```
-CREATE TABLE IF NOT EXISTS tb_room (
-  userid varchar(50) NOT NULL,
-  title varchar(255) NOT NULL,
-  frontcover varchar(255) DEFAULT NULL,
-  location varchar(128) DEFAULT NULL,
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (userid)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-```
-##roomservice的数据上报表
-```
-CREATE TABLE IF NOT EXISTS tb_report (
-  report_id BIGINT UNSIGNED AUTO_INCREMENT,
-  str_appid varchar(150) NOT NULL,
-  str_roomid varchar(150) NOT NULL,
-  str_room_creator varchar(150) NOT NULL,
-  str_userid varchar(150) NOT NULL,
-  str_platform varchar(50) DEFAULT NULL,
-  int64_ts_enter_room BIGINT DEFAULT 0,
-  int64_tc_join_group BIGINT DEFAULT 0,
-  int64_tc_get_pushers BIGINT DEFAULT 0,
-  int64_tc_play_stream BIGINT DEFAULT 0,
-  int64_tc_get_pushurl BIGINT DEFAULT 0,
-  int64_tc_push_stream BIGINT DEFAULT 0,
-  int64_tc_add_pusher BIGINT DEFAULT 0,
-  int64_tc_enter_room BIGINT DEFAULT 0,
-  create_time timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  str_appversion varchar(128) DEFAULT NULL,
-  str_sdkversion varchar(128) DEFAULT NULL,
-  str_common_version varchar(128) DEFAULT NULL,
-  str_nickname varchar(128) DEFAULT NULL,
-  str_device varchar(128) DEFAULT NULL,
-  str_device_type varchar(128) DEFAULT NULL,
-  str_play_info varchar(500) DEFAULT NULL,
-  str_push_info varchar(500) DEFAULT NULL,
-  int32_is_roomservice INT DEFAULT 0,
-  PRIMARY KEY (report_id)
+CREATE TABLE IF NOT EXISTS `tb_room` (
+  `userid` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `frontcover` varchar(255) DEFAULT NULL,
+  `location` varchar(128) DEFAULT NULL,
+  `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
@@ -527,13 +314,5 @@ curl -d "userid=2&nickname=test&avatar=xxxx&sex=0" "http://127.0.0.1:8080/lite/u
 ###获取用户信息
 ```
 curl -d "userid=2" "http://127.0.0.1:8080/lite/get_user_info"
-```
-###发布小视频
-```
-curl -d "userid=2&file_id=2&title=测试&frontcover=http://xxx.png&location=hhhh&play_url=http://xxx.flv" "http://127.0.0.1:8080/lite/upload_ugc"
-```
-###拉取小视频列表
-```
-curl -d "index=0&count=1" "http://127.0.0.1:8080/lite/get_ugc_list"
 ```
 

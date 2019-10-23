@@ -1,7 +1,6 @@
 <?php
-include_once dirname(__FILE__).'../../../common/GlobalDefine.php';
-include_once dirname(__FILE__).'../../../common/GlobalFunctions.php';
-
+include_once dirname(__FILE__) . '../../../common/GlobalDefine.php';
+include_once dirname(__FILE__) . '../../../common/GlobalFunctions.php';
 
 class SimpleMysqlSession
 {
@@ -14,19 +13,17 @@ class SimpleMysqlSession
      * @param string $db_name，数据库名
      * @throws Exception
      */
-    function __construct($db_host,
-                         $db_port,
-                         $db_user,
-                         $db_password,
-                         $db_name)
-    {
+    public function __construct($db_host,
+        $db_port,
+        $db_user,
+        $db_password,
+        $db_name) {
         $this->connection_ = mysqli_connect($db_host, $db_user,
             $db_password, $db_name, $db_port);
-        if (!$this->connection_)
-        {
-        	mysql_log(ERROR, EC_OK, 'mysqli_connect failed, error:'.mysqli_connect_error());
+        if (!$this->connection_) {
+            mysql_log(ERROR, EC_OK, 'mysqli_connect failed, error:' . mysqli_connect_error());
             throw new Exception(
-                'mysqli_connect failed, error:'.mysqli_connect_error());
+                'mysqli_connect failed, error:' . mysqli_connect_error());
         }
         mysqli_real_query($this->connection_, "SET NAMES 'utf8mb4'");
     }
@@ -59,22 +56,19 @@ class SimpleMysqlSession
     public function ExecuteSelectSql($sql)
     {
         mysql_log(INFO, EC_OK, "" . $sql);
-        if (!mysqli_real_query($this->connection_, $sql))
-        {
+        if (!mysqli_real_query($this->connection_, $sql)) {
             throw new Exception(
-                'mysqli_real_query failed, sql:'.$sql.', error:'
-                .mysqli_error($this->connection_));
+                'mysqli_real_query failed, sql:' . $sql . ', error:'
+                . mysqli_error($this->connection_));
         }
         $result = mysqli_store_result($this->connection_);
-        if (mysqli_errno($this->connection_) != 0)
-        {
+        if (mysqli_errno($this->connection_) != 0) {
             throw new Exception(
-                'mysqli_store_result failed, sql:'.$sql.', error:'
-                .mysqli_error($this->connection_));
+                'mysqli_store_result failed, sql:' . $sql . ', error:'
+                . mysqli_error($this->connection_));
         }
         $result_set = array();
-        while ($object = mysqli_fetch_assoc($result))
-        {
+        while ($object = mysqli_fetch_assoc($result)) {
             array_push($result_set, $object);
         }
 
@@ -91,20 +85,21 @@ class SimpleMysqlSession
     {
         // echo $sql."\n";
         mysql_log(INFO, EC_OK, "" . $sql);
-        if (!mysqli_real_query($this->connection_, $sql))
-        {
+        if (!mysqli_real_query($this->connection_, $sql)) {
             throw new Exception(
-                'mysqli_real_query failed, sql:'.$sql.', error:'
-                .mysqli_error($this->connection_));
+                'mysqli_real_query failed, sql:' . $sql . ', error:'
+                . mysqli_error($this->connection_));
         }
 
         return mysqli_affected_rows($this->connection_);
     }
 
-
-    public function Begin() {$this->ExecuteUpdateSql('begin');}
-    public function Commit() {$this->ExecuteUpdateSql('commit');}
-    public function Rollback() {$this->ExecuteUpdateSql('rollback');}
+    public function Begin()
+    {$this->ExecuteUpdateSql('begin');}
+    public function Commit()
+    {$this->ExecuteUpdateSql('commit');}
+    public function Rollback()
+    {$this->ExecuteUpdateSql('rollback');}
 
     /**
      * @desc 添加对象
@@ -114,16 +109,15 @@ class SimpleMysqlSession
      */
     public function AddObject($table, $object)
     {
-        $sql = 'INSERT INTO '.$table;
-        $key_array = array();
+        $sql         = 'INSERT INTO ' . $table;
+        $key_array   = array();
         $value_array = array();
-        foreach ($object as $key => $value)
-        {
+        foreach ($object as $key => $value) {
             array_push($key_array, $key);
             array_push($value_array, is_string($value) ? "'$value'" : $value);
         }
-        $sql .= ' (`'.join('`,`', $key_array).'`)';
-        $sql .= ' VALUES('.join(',', $value_array).')';
+        $sql .= ' (`' . join('`,`', $key_array) . '`)';
+        $sql .= ' VALUES(' . join(',', $value_array) . ')';
         $this->ExecuteUpdateSql($sql);
         $result_set = $this->ExecuteSelectSql(
             'SELECT LAST_INSERT_ID() AS id');
@@ -139,16 +133,15 @@ class SimpleMysqlSession
      */
     public function ReplaceObject($table, $object)
     {
-        $sql = 'REPLACE INTO '.$table;
-        $key_array = array();
+        $sql         = 'REPLACE INTO ' . $table;
+        $key_array   = array();
         $value_array = array();
-        foreach ($object as $key => $value)
-        {
+        foreach ($object as $key => $value) {
             array_push($key_array, $key);
             array_push($value_array, is_string($value) ? "'$value'" : $value);
         }
-        $sql .= ' (`'.join('`,`', $key_array).'`)';
-        $sql .= ' VALUES('.join(',', $value_array).')';
+        $sql .= ' (`' . join('`,`', $key_array) . '`)';
+        $sql .= ' VALUES(' . join(',', $value_array) . ')';
         $this->ExecuteUpdateSql($sql);
         $result_set = $this->ExecuteSelectSql(
             'SELECT LAST_INSERT_ID() AS id');
@@ -165,20 +158,17 @@ class SimpleMysqlSession
      */
     public function GetObject($table, $primary_key)
     {
-        $sql = 'SELECT * FROM '.$table;
+        $sql             = 'SELECT * FROM ' . $table;
         $condition_array = $this->MakeConditionArray($primary_key);
-        $conditions = join(' AND ', $condition_array);
-        $sql .= ' WHERE '.$conditions;
-        $result_set = $this->ExecuteSelectSql($sql);
+        $conditions      = join(' AND ', $condition_array);
+        $sql .= ' WHERE ' . $conditions;
+        $result_set   = $this->ExecuteSelectSql($sql);
         $result_count = count($result_set);
-        if ($result_count == 1)
-        {
+        if ($result_count == 1) {
             return $result_set[0];
-        }
-        else if($result_count > 1)
-        {
-            throw new Exception($table.': return '.$result_count
-                .' records, primary_key:'.$conditions);
+        } else if ($result_count > 1) {
+            throw new Exception($table . ': return ' . $result_count
+                . ' records, primary_key:' . $conditions);
         }
     }
 
@@ -191,9 +181,9 @@ class SimpleMysqlSession
      */
     public function DeleteObject($table, $primary_key)
     {
-        $sql = 'DELETE FROM '.$table.' WHERE ';
+        $sql             = 'DELETE FROM ' . $table . ' WHERE ';
         $condition_array = $this->MakeConditionArray($primary_key);
-        $conditions = join(' AND ', $condition_array);
+        $conditions      = join(' AND ', $condition_array);
         $sql .= $conditions;
         $delete_count = $this->ExecuteUpdateSql($sql);
 
@@ -210,21 +200,19 @@ class SimpleMysqlSession
      */
     public function UpdateObject($table, $primary_key, $object)
     {
-        if (empty($object))
-        {
+        if (empty($object)) {
             return;
         }
 
-        $sql = 'UPDATE '.$table.' SET ';
-        $value_array = array();
+        $sql             = 'UPDATE ' . $table . ' SET ';
+        $value_array     = array();
         $condition_array = $this->MakeConditionArray($primary_key);
-        $conditions = join(' AND ', $condition_array);
-        foreach ($object as $key => $value)
-        {
+        $conditions      = join(' AND ', $condition_array);
+        foreach ($object as $key => $value) {
             array_push($value_array, is_string($value) ?
                 "`$key`='$value'" : "`$key`=$value");
         }
-        $sql .= join(',', $value_array).' WHERE ';
+        $sql .= join(',', $value_array) . ' WHERE ';
         $sql .= join(' AND ', $condition_array);
         $update_count = $this->ExecuteUpdateSql($sql);
 
@@ -240,15 +228,13 @@ class SimpleMysqlSession
      * @return Ambigous <array，, multitype:>
      */
     public function QueryObjects($table,
-                                 $condition,
-                                 $start_row,
-                                 $row_number)
-    {
-        $sql = 'SELECT * FROM '.$table;
-        if (!empty($condition))
-        {
+        $condition,
+        $start_row,
+        $row_number) {
+        $sql = 'SELECT * FROM ' . $table;
+        if (!empty($condition)) {
             $condition_array = $this->MakeConditionArray($condition);
-            $sql .= ' WHERE '.join(' AND ', $condition_array);
+            $sql .= ' WHERE ' . join(' AND ', $condition_array);
         }
         $sql .= " LIMIT $start_row, $row_number";
         $objects = $this->ExecuteSelectSql($sql);
@@ -264,11 +250,10 @@ class SimpleMysqlSession
      */
     public function QueryObjectCount($table, $condition)
     {
-        $sql = 'SELECT COUNT(*) AS count FROM '.$table;
-        if (!empty($condition))
-        {
+        $sql = 'SELECT COUNT(*) AS count FROM ' . $table;
+        if (!empty($condition)) {
             $condition_array = $this->MakeConditionArray($condition);
-            $sql .= ' WHERE '.join(' AND ', $condition_array);
+            $sql .= ' WHERE ' . join(' AND ', $condition_array);
         }
         $ret = $this->ExecuteSelectSql($sql);
 
@@ -283,8 +268,7 @@ class SimpleMysqlSession
     private function MakeConditionArray($condition)
     {
         $condition_array = array();
-        foreach ($condition as $key => $value)
-        {
+        foreach ($condition as $key => $value) {
             array_push($condition_array, is_string($value) ?
                 "`$key`='$value'" : "`$key`=$value");
         }
@@ -292,5 +276,3 @@ class SimpleMysqlSession
         return $condition_array;
     }
 }
-
-?>

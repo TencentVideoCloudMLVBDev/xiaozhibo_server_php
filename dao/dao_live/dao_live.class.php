@@ -6,16 +6,16 @@ class dao_live extends Dao
     public function addUGCData($userid, $file_id, $play_url, $title, $frontcover, $location)
     {
         try {
-            $nowTime = time();
-            $time = date('Y-m-d H:i:s', $nowTime);
+            $nowTime  = time();
+            $time     = date('Y-m-d H:i:s', $nowTime);
             $tmp_data = array(
-                'userid' => $userid,
-                'file_id' => $file_id,
-                'title' => $title,
-                'frontcover' => $frontcover,
-                'location' => $location,
-                'play_url' => $play_url,
-                'create_time' => $time
+                'userid'      => $userid,
+                'file_id'     => $file_id,
+                'title'       => $title,
+                'frontcover'  => $frontcover,
+                'location'    => $location,
+                'play_url'    => $play_url,
+                'create_time' => $time,
             );
             $this->session_->ReplaceObject(
                 'tb_ugc', $tmp_data);
@@ -27,13 +27,13 @@ class dao_live extends Dao
         return self::ERROR_CODE_SUCCESSFUL;
     }
 
-
     public function getUGCCount(&$live_count, &$error_message)
     {
         $query_sql = "select count(*) as all_count from tb_ugc";
-        try {
+        try
+        {
             $count_result = $this->session_->ExecuteSelectSql($query_sql);
-            $live_count = $count_result[0]['all_count'];
+            $live_count   = $count_result[0]['all_count'];
         } catch (Exception $e) {
             $error_message = $e->getMessage();
             mysql_log(ERROR, EC_OK, "get getUGCCount count error :" . $error_message);
@@ -42,15 +42,15 @@ class dao_live extends Dao
         return self::ERROR_CODE_SUCCESSFUL;
     }
 
-
     public function getTapeCount(&$tape_count, &$error_message)
     {
-        $now_time = time();
-        $interval = TAPE_FILE_VALID_TIME;
+        $now_time  = time();
+        $interval  = TAPE_FILE_VALID_TIME;
         $query_sql = "select count(*) as all_count from tb_vod where (" . $now_time . " - unix_timestamp(create_time)) < " . $interval;
-        try {
+        try
+        {
             $count_result = $this->session_->ExecuteSelectSql($query_sql);
-            $tape_count = $count_result[0]['all_count'];
+            $tape_count   = $count_result[0]['all_count'];
         } catch (Exception $e) {
             $error_message = $e->getMessage();
             mysql_log(ERROR, EC_OK, "get tape_count count error :" . $error_message);
@@ -62,26 +62,27 @@ class dao_live extends Dao
     public function getUGCList($start_row, $row_number, &$live_list, &$error_message)
     {
         //7天内的
-        $now_time = time();
-        $interval = TAPE_FILE_VALID_TIME;
+        $now_time   = time();
+        $interval   = TAPE_FILE_VALID_TIME;
         $search_sql = "select * from tb_ugc where (" . $now_time . " - unix_timestamp(create_time)) < " . $interval
-            . "  order by create_time desc limit " . strval($start_row) . "," . strval($row_number);
-        try {
+        . "  order by create_time desc limit " . strval($start_row) . "," . strval($row_number);
+        try
+        {
             $result = $this->session_->ExecuteSelectSql($search_sql);
 
             if (!empty($result)) {
                 foreach ($result as $list) {
                     $this->getUserInfo($list['userid'], $userinfo);
                     $one_record = array(
-                        'userid' => $list['userid'],
-                        'nickname' => $userinfo['nickname'] === null ? "" : $userinfo['nickname'],
-                        'avatar' => $userinfo['avatar'] === null ? "" : $userinfo['avatar'],
-                        'file_id' => $list['file_id'],
-                        'title' => $list['title'],
-                        'frontcover' => $list['frontcover'] === null ? "" : $list['frontcover'],
-                        'location' => $list['location'] === null ? "" : $list['location'],
-                        'play_url' => $list['play_url'],
-                        'create_time' => $list['create_time']
+                        'userid'      => $list['userid'],
+                        'nickname'    => $userinfo['nickname'] === null ? "" : $userinfo['nickname'],
+                        'avatar'      => $userinfo['avatar'] === null ? "" : $userinfo['avatar'],
+                        'file_id'     => $list['file_id'],
+                        'title'       => $list['title'],
+                        'frontcover'  => $list['frontcover'] === null ? "" : $list['frontcover'],
+                        'location'    => $list['location'] === null ? "" : $list['location'],
+                        'play_url'    => $list['play_url'],
+                        'create_time' => $list['create_time'],
                     );
                     array_push($live_list, $one_record);
                 }
@@ -94,36 +95,36 @@ class dao_live extends Dao
         return self::ERROR_CODE_SUCCESSFUL;
 
     }
-
     public function getTapeList($start_row, $row_number, &$live_list, &$error_message)
     {
         //7天内的
-        $now_time = time();
-        $interval = TAPE_FILE_VALID_TIME;
+        $now_time   = time();
+        $interval   = TAPE_FILE_VALID_TIME;
         $search_sql = " where (" . $now_time . " - unix_timestamp(create_time)) < " . $interval . " AND play_url !=''";
 
         $query_sql = "select * from tb_vod " . $search_sql . "  order by create_time desc limit " . strval($start_row) . "," . strval($row_number);
 
-        try {
+        try
+        {
             $result = $this->session_->ExecuteSelectSql($query_sql);
 
             if (!empty($result)) {
                 foreach ($result as $list) {
                     $this->getUserInfo($list['userid'], $userinfo);
                     $one_record = array(
-                        'userid' => $list['userid'],
-                        'nickname' => $userinfo['nickname'] === null ? "" : $userinfo['nickname'],
-                        'avatar' => $userinfo['avatar'] === null ? "" : $userinfo['avatar'],
-                        'file_id' => $list['file_id'],
-                        'title' => $list['title'],
-                        'likecount' => intval($list['like_count']),
-                        'viewercount' => intval($list['viewer_count']),
-                        'frontcover' => $list['frontcover'] === null ? "" : $list['frontcover'],
-                        'location' => $list['location'] === null ? "" : $list['location'],
-                        'play_url' => $list['play_url'],
-                        'create_time' => $list['create_time'],
+                        'userid'       => $list['userid'],
+                        'nickname'     => $userinfo['nickname'] === null ? "" : $userinfo['nickname'],
+                        'avatar'       => $userinfo['avatar'] === null ? "" : $userinfo['avatar'],
+                        'file_id'      => $list['file_id'],
+                        'title'        => $list['title'],
+                        'likecount'    => intval($list['like_count']),
+                        'viewercount'  => intval($list['viewer_count']),
+                        'frontcover'   => $list['frontcover'] === null ? "" : $list['frontcover'],
+                        'location'     => $list['location'] === null ? "" : $list['location'],
+                        'play_url'     => $list['play_url'],
+                        'create_time'  => $list['create_time'],
                         'hls_play_url' => $list['hls_play_url'],
-                        'start_time' => $list['start_time']
+                        'start_time'   => $list['start_time'],
                     );
                     array_push($live_list, $one_record);
                 }
@@ -139,7 +140,8 @@ class dao_live extends Dao
 
     public function getUserInfo($userid, &$userinfo)
     {
-        try {
+        try
+        {
             $result = $this->session_->GetObject("tb_account", array(
                 'userid' => $userid,
             ));
@@ -158,7 +160,8 @@ class dao_live extends Dao
 
     public function updateUserInfo($userid, $nickname, $avatar, $sex, $frontcover)
     {
-        try {
+        try
+        {
             $result = $this->session_->GetObject("tb_account", array(
                 'userid' => $userid,
             ));
@@ -167,9 +170,9 @@ class dao_live extends Dao
             }
 
             $ret = $this->session_->UpdateObject("tb_account", array('userid' => $userid), array(
-                'nickname' => $nickname,
-                'avatar' => $avatar,
-                'sex' => $sex,
+                'nickname'   => $nickname,
+                'avatar'     => $avatar,
+                'sex'        => $sex,
                 'frontcover' => $frontcover,
             ));
             if ($ret != 1) {
@@ -185,7 +188,8 @@ class dao_live extends Dao
 
     private function getRoomInfo($userid, &$roominfo)
     {
-        try {
+        try
+        {
             $result = $this->session_->GetObject("tb_room", array(
                 'userid' => $userid,
             ));
@@ -204,9 +208,10 @@ class dao_live extends Dao
 
     public function addRoom($userid, $title, $frontcover, $location)
     {
-        try {
+        try
+        {
             $nowTime = time();
-            $time = date('Y-m-d H:i:s', $nowTime);
+            $time    = date('Y-m-d H:i:s', $nowTime);
 
             $result = $this->session_->GetObject("tb_room", array(
                 'userid' => $userid,
@@ -214,18 +219,18 @@ class dao_live extends Dao
 
             if (!empty($result)) {
                 $this->session_->UpdateObject("tb_room", array('userid' => $userid), array(
-                    'userid' => $userid,
-                    'title' => $title,
-                    'frontcover' => $frontcover,
-                    'location' => $location,
+                    'userid'      => $userid,
+                    'title'       => $title,
+                    'frontcover'  => $frontcover,
+                    'location'    => $location,
                     'create_time' => $time,
                 ));
             } else {
                 $this->session_->AddObject("tb_room", array(
-                    'userid' => $userid,
-                    'title' => $title,
-                    'frontcover' => $frontcover,
-                    'location' => $location,
+                    'userid'      => $userid,
+                    'title'       => $title,
+                    'frontcover'  => $frontcover,
+                    'location'    => $location,
                     'create_time' => $time,
                 ));
             }
@@ -237,13 +242,15 @@ class dao_live extends Dao
         return self::ERROR_CODE_SUCCESSFUL;
     }
 
-
     private function getTheSameStreamTape($userid, $start_time, $end_time, &$file_id)
     {
         /*begin:转义字符串，防止sql注入  added by alongchen 2017-01-04 */
-        $userid = $this->session_->EscapeString($userid);
+        $userid     = $this->session_->EscapeString($userid);
+        $start_time = $this->session_->EscapeString($start_time);
+        $end_time   = $this->session_->EscapeString($end_time);
         /*end  :转义字符串，防止sql注入  added by alongchen 2017-01-04 */
-        try {
+        try
+        {
             $query_sql = "select * from tb_vod where userid = '" . $userid .
                 "' and ((unix_timestamp(start_time) > " . $start_time . " AND unix_timestamp(start_time) < " . $end_time . ") OR " .
                 "(unix_timestamp(create_time) > " . $start_time . " AND unix_timestamp(create_time) < " . $end_time . ") OR " .
@@ -260,24 +267,20 @@ class dao_live extends Dao
             mysql_log(ERROR, EC_OK, "getLiveUser error :" . $userid . ":" . $error_message);
             return self::ERROR_CODE_DB_ERROR;
         }
-        //	return self::ERROR_CODE_SUCCESSFUL;
+        //    return self::ERROR_CODE_SUCCESSFUL;
     }
-
 
     public function addTapeFile($stream_id, $video_id, $video_url, $start_time, $end_time, $format_type)
     {
         try {
-            $ids = explode('_', $stream_id, -1);
-            $stream_id_after = implode("_", $ids);
-            $ids = explode('_', $stream_id_after, 2);
+            $ids    = explode('_', $stream_id, 2);
             $userid = $ids[1];
-
+            $this->EscapeJson($userid);
             $ret = $this->getRoomInfo($userid, $roominfo);
             if ($ret != self::ERROR_CODE_SUCCESSFUL) {
                 mysql_log(ERROR, EC_OK, "getRoomInfo Error:" . $userid);
                 return self::ERROR_CODE_DB_ERROR;
             }
-
 
             //先查询db中是否已经有同一个stream_id的一种格式的记录了，如果有，更新。如果没有，新增记录
             $sel_ret = $this->getTheSameStreamTape($roominfo['userid'], $start_time, $end_time, $sel_file_id);
@@ -293,14 +296,15 @@ class dao_live extends Dao
                 $this->session_->UpdateObject('tb_vod',
                     array('userid' => $roominfo['userid'], 'file_id' => $sel_file_id),
                     $tmp_data);
-            } //老的新增逻辑
+            }
+            //老的新增逻辑
             elseif (-1 == $sel_ret) {
                 $tmp_data = array(
-                    'userid' => $roominfo['userid'],
-//	    				'play_url' => $video_url,
-                    'file_id' => $video_id,
-                    'start_time' => date('Y-m-d H:i:s', $start_time),
-                    'create_time' => date('Y-m-d H:i:s', $end_time)
+                    'userid'      => $roominfo['userid'],
+//                        'play_url' => $video_url,
+                    'file_id'     => $video_id,
+                    'start_time'  => date('Y-m-d H:i:s', $start_time),
+                    'create_time' => date('Y-m-d H:i:s', $end_time),
                 );
                 if ($format_type === "mp4") {
                     $tmp_data['play_url'] = $video_url;
@@ -331,18 +335,19 @@ class dao_live extends Dao
 
     public function checkAndAddAccountID($userid, $pwdmd5, &$bExist)
     {
-        try {
+        try
+        {
             $result = $this->session_->GetObject("tb_account", array(
                 'userid' => $userid,
             ));
             if (empty($result)) {
-                $bExist = false;
-                $nowTime = time();
-                $time = date('Y-m-d H:i:s', $nowTime);
+                $bExist   = false;
+                $nowTime  = time();
+                $time     = date('Y-m-d H:i:s', $nowTime);
                 $tmp_data = array(
-                    'userid' => $userid,
-                    'password' => $pwdmd5,
-                    'create_time' => $time
+                    'userid'      => $userid,
+                    'password'    => $pwdmd5,
+                    'create_time' => $time,
                 );
                 $this->session_->AddObject("tb_account", $tmp_data);
             } else {
@@ -382,7 +387,8 @@ class dao_live extends Dao
             . $record['userSig'] . "', login_time = "
             . $record['loginTime'] . ", last_request_time = "
             . $record['lastRequestTime'] . " WHERE uid= '" . $record['uid'] . "'";
-        try {
+        try
+        {
             $result = $this->session_->ExecuteSelectSql($query_sql);
         } catch (Exception $e) {
             $error_message = $e->getMessage();
@@ -395,16 +401,18 @@ class dao_live extends Dao
     public function EscapeJson(&$json)
     {
         if (is_object($json)) {
-            foreach ($json as $key => &$value)
+            foreach ($json as $key => &$value) {
                 $this->EscapeJson($value);
+            }
+
         } else if (is_array($json)) {
-            foreach ($json as $key => &$value)
+            foreach ($json as $key => &$value) {
                 $this->EscapeJson($value);
+            }
+
         } else if (is_string($json)) {
             $json = $this->session_->EscapeString($json);
         } else {
         }
     }
 }
-
-?>

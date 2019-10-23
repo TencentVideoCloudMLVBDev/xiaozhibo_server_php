@@ -24,11 +24,11 @@ class get_cos_sign extends AbstractInterface
 
         $currentTime = time();
         $expiredTime = $currentTime + COSKEY_EXPIRED_TIME;
-        $keyTime = $currentTime . ';' . $expiredTime;
-        $signStr = bin2hex(hash_hmac('SHA1', $keyTime, COSKEY_SECRECTKEY, true));
+        $keyTime     = $currentTime . ';' . $expiredTime;
+        $signStr     = bin2hex(hash_hmac('SHA1', $keyTime, COSKEY_SECRECTKEY, true));
 
         $this->_retValue = EC_OK;
-        $this->_data = array("signKey"=>$signStr, "keyTime"=>$keyTime);
+        $this->_data     = array("signKey" => $signStr, "keyTime" => $keyTime);
 
         interface_log(INFO, EC_OK, 'get_cos_sign::process() succeed ');
         return true;

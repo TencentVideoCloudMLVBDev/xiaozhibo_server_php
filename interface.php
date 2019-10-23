@@ -6,7 +6,6 @@ require_once dirname(__FILE__) . '/common/GlobalFunctions.php';
 $request = file_get_contents("php://input");
 interface_log(INFO, EC_OK, 'request:' . $request);
 
-
 $mtime = explode(' ', microtime());
 
 $start = $mtime[1] + $mtime[0];
@@ -17,22 +16,18 @@ interface_log(INFO, EC_OK, "response(" . strlen($result) . "):" . $result);
 
 header("Content-Type: application/json");
 header("X-Content-Type-Options: nosniff");
-header("Content-Length:" . strlen($result));
+//header("Content-Length:" . strlen($result));
 echo $result;
 
-
 function Process($request,
-                 &$interfaceName,
-                 &$result,
-                 &$retval)
-{
-
+    &$interfaceName,
+    &$result,
+    &$retval) {
 
     $data = json_decode($request, true);
 
     $interfaceName = str_replace("/", "", $_SERVER['PATH_INFO']);
-    $instance = instance($interfaceName);
-
+    $instance      = instance($interfaceName);
     if (!$instance) {
         $errorMsg = genErrMsg(EC_BAD_REQUEST, ParaStrFilter($interfaceName));
         interface_log(ERROR, EC_BAD_REQUEST, $errorMsg);
@@ -76,5 +71,3 @@ function Process($request,
 
     return;
 }
-
-?>
