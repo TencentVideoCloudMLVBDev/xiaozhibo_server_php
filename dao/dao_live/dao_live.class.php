@@ -100,7 +100,7 @@ class dao_live extends Dao
         //7天内的
         $now_time   = time();
         $interval   = TAPE_FILE_VALID_TIME;
-        $search_sql = " where (" . $now_time . " - unix_timestamp(create_time)) < " . $interval . " AND play_url !=''";
+        $search_sql = " where (" . $now_time . " - unix_timestamp(create_time)) < " . $interval . " AND (play_url !='' OR hls_play_url !='')";
 
         $query_sql = "select * from tb_vod " . $search_sql . "  order by create_time desc limit " . strval($start_row) . "," . strval($row_number);
 
@@ -121,9 +121,9 @@ class dao_live extends Dao
                         'viewercount'  => intval($list['viewer_count']),
                         'frontcover'   => $list['frontcover'] === null ? "" : $list['frontcover'],
                         'location'     => $list['location'] === null ? "" : $list['location'],
-                        'play_url'     => $list['play_url'],
+                        'play_url'     => $list['play_url'] === null ? "" : $list['play_url'],
                         'create_time'  => $list['create_time'],
-                        'hls_play_url' => $list['hls_play_url'],
+                        'hls_play_url' => $list['hls_play_url'] === null ? "" : $list['hls_play_url'],
                         'start_time'   => $list['start_time'],
                     );
                     array_push($live_list, $one_record);
